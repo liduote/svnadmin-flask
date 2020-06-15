@@ -9,7 +9,9 @@ class Config:
         'mysql+pymysql://' \
         'svnadmin_uo:20kTQFBS@devops-ingress.asiainfo.com:35676/svnadmin?charset=utf8'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = False
     SQLALCHEMY_POOL_RECYCLE = 3
     SQLALCHEMY_POOL_SIZE = 20
 
+    DATA_DIR = os.environ.get('DATA_DIR') or '/data/svn'
+    SVN_BASE_URL = os.environ.get('SVN_BASE_URL') or 'http://10.1.130.13:9099/svn/'
