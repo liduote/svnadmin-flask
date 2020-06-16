@@ -1,6 +1,6 @@
 FROM rosslavery/git-node-alpine as nodebuilder
 
-ARG web_src https://github.com/liduote/svnadmin-web.git
+ENV web_src https://github.com/liduote/svnadmin-web.git
 
 WORKDIR /
 
