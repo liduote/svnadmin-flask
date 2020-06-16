@@ -1,8 +1,10 @@
 FROM rosslavery/git-node-alpine as nodebuilder
 
+ARG web_src https://github.com/liduote/svnadmin-web.git
+
 WORKDIR /
 
-RUN git clone https://gitee.com/svn-admin/svnadmin-web.git &&\
+RUN git clone ${web_src} &&\
 cd svnadmin-web && npm install && npm run build
 
 FROM centos:7
@@ -21,7 +23,7 @@ COPY --from=nodebuilder /svnadmin-web/dist /svnadmin-web/
 COPY . /svnadmin-flask
 
 RUN cp /svnadmin-flask/docker/entrypoint.sh /entrypoint.sh &&\
-chmod a+x /entrypoint.sh && pip3 install -r /svnadmin-flask/requirements.txt -i https://mirrors.cloud.tencent.com/pypi/simple
+chmod a+x /entrypoint.sh && pip3 install -r /svnadmin-flask/requirements.txt
 
 ENV LANG en_US.utf8
 
