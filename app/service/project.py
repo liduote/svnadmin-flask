@@ -211,4 +211,9 @@ class ProjectService:
 
     def add_external_field(self, project):
         if project:
-            project.http_url = Config.SVN_BASE_URL + project.path
+            if not Config.SVN_BASE_URL:
+                project.http_url = 'http://svnadmin.example.com/svn/' + project.path
+            if Config.SVN_BASE_URL[-1] == '/':
+                project.http_url = Config.SVN_BASE_URL + project.path
+            else:
+                project.http_url = Config.SVN_BASE_URL + '/' + project.path
