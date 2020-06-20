@@ -1,6 +1,7 @@
 import json
 
 from . import main
+from app.model import User
 
 
 @main.route('/login', methods=['POST'])

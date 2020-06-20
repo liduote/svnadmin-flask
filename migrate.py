@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import pymysql
@@ -5,7 +6,7 @@ import pymysql
 from config import Config
 
 conn = pymysql.connect(host=Config.MYSQL_HOST,
-                       port=Config.MYSQL_PORT,
+                       port=int(Config.MYSQL_PORT),
                        user=Config.MYSQL_USER,
                        password=Config.MYSQL_PASS,
                        database=Config.MYSQL_DB,
@@ -19,6 +20,8 @@ try:
 
     results = cur.fetchall()  # 获取查询的所有记录
     if not results:
+        os.chdir('/svnadmin-flask')
+        os.environ.setdefault('FLASK_APP', 'manage.py')
         status, output = subprocess.getstatusoutput('flask db upgrade')
         print(status)
         print(output)

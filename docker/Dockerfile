@@ -14,7 +14,7 @@ baseurl=http://opensource.wandisco.com/centos/7/svn-1.11/RPMS/x86_64/ \n\
 enabled=1 \n\
 gpgcheck=0" > /etc/yum.repos.d/svn.repo &&\
 yum install -y epel-release &&\
-yum install -y subversion httpd mod_dav_svn mod_ldap python3 python3-pip nginx
+yum install -y subversion httpd mod_dav_svn mod_ldap python3 python3-pip nginx mysql-devel
 
 RUN groupadd svn -g 10399 && useradd svn -u 10399 -g svn
 

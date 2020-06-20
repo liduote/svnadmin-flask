@@ -19,6 +19,6 @@ loglevel = os.environ.get('LOG_LEVEL') or 'debug'
 # 设置gunicorn访问日志格式，错误日志无法设置
 access_log_format = '%(t)s %(p)s %(h)s “%(r)s” %(s)s %(L)s %(b)s %(f)s” “%(a)s”'
 # 访问日志文件
-accesslog = "/var/log/svnadmin/gunicorn_access.log"
+accesslog = "{LOG_DIR}/gunicorn_access.log"
 # 错误日志文件
-errorlog = "/var/log/svnadmin/gunicorn_error.log"
+errorlog = "{LOG_DIR}/gunicorn_error.log"

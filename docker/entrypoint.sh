@@ -6,12 +6,15 @@ data_path=$base_path'/svn'
 log_path=$base_path'/log' 
 mkdir -p ${data_path}
 mkdir -p ${log_path}
+chown -R svn:svn $base_path
 
 # 修改httpd的配置
 sed -i 's@#ServerName www.example.com:80@ServerName www.example.com:88@' /etc/httpd/conf/httpd.conf
 sed -i 's@User apache@User svn@' /etc/httpd/conf/httpd.conf
 sed -i 's@Group apache@Group svn@' /etc/httpd/conf/httpd.conf
 sed -i 's@Listen 80@Listen 88@' /etc/httpd/conf/httpd.conf
+/bin/cp -rf /svnadmin-flask/docker/mod_auth_mysql.so /etc/httpd/modules/mod_auth_mysql.so
+chmod 755 /etc/httpd/modules/mod_auth_mysql.so
 
 auth_type=${AUTH_TYPE:-mysql}
 if [ "$auth_type" = "mysql" ]; then
@@ -20,7 +23,7 @@ if [ "$auth_type" = "mysql" ]; then
   mysql_db=${MYSQL_DB:svnadmin}
   mysql_user=${MYSQL_USER:svnadmin}
   mysql_pass=${MYSQL_PASS:password}
-  mysql_table_name=${MYSQL_USER_TABLE_NAME:-user}
+  mysql_table_name=${MYSQL_USER_TABLE_NAME:-users}
   mysql_username_field=${MYSQL_USER_FIELD_NAME:-username}
   mysql_password_field=${MYSQL_PASS_FIELD_NAME:-password}
   /bin/cp -rf /svnadmin-flask/docker/subversion_mysql.conf /etc/httpd/conf.d/subversion.conf
@@ -28,7 +31,7 @@ if [ "$auth_type" = "mysql" ]; then
   sed -i 's@{MYSQL_HOST}@'${mysql_host}'@' /etc/httpd/conf.d/subversion.conf
   sed -i 's@{MYSQL_PORT}@'${mysql_port}'@' /etc/httpd/conf.d/subversion.conf
   sed -i 's@{MYSQL_USER}@'${mysql_user}'@' /etc/httpd/conf.d/subversion.conf
-  sed -i 's@{MYSQL_PASS}@'${mysql_pass}'@' /etc/httpd/conf.d/subversion.conf
+  sed -i 's/{MYSQL_PASS}/'${mysql_pass}'/' /etc/httpd/conf.d/subversion.conf
   sed -i 's@{MYSQL_DB}@'${mysql_db}'@' /etc/httpd/conf.d/subversion.conf
   sed -i 's@{MYSQL_USER_TABLE_NAME}@'${mysql_table_name}'@' /etc/httpd/conf.d/subversion.conf
   sed -i 's@{MYSQL_USER_FIELD_NAME}@'${mysql_username_field}'@' /etc/httpd/conf.d/subversion.conf
@@ -57,8 +60,11 @@ fi
 /bin/cp -rf /svnadmin-flask/docker/nginx.conf /etc/nginx/nginx.conf
 svn_domain=${SVN_DOMAIN:-svnadmin.example.com}
 svn_port=${SVN_PORT:-80}
-svn_host=$svn_domain$svn_port
+svn_host=$svn_domain:$svn_port
 sed -i 's@{Host}@'${svn_host}'@' /etc/nginx/nginx.conf
+
+sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/supervisor.conf
+sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/gunicorn_conf.py
 
 python /svnadmin_flask/migrate.py
 # 启动所有服务
