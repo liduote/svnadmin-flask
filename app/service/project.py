@@ -25,8 +25,8 @@ class ProjectService:
     def validate(self):
         if not self.name:
             raise InvalidUsage(payload=ResponseEnum.PROJECT_NAME_CANNOT_BE_EMPTY)
-        if not self.path:
-            raise InvalidUsage(payload=ResponseEnum.PROJECT_PATH_CANNOT_BE_EMPTY)
+        if not self.path or not re.search('^[A-z][\\w\\-_]*$', self.path):
+            raise InvalidUsage(payload=ResponseEnum.PROJECT_PATH_NOT_VALID)
         if not self.visibility:
             self.visibility = 'private'
 

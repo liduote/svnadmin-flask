@@ -14,7 +14,7 @@ class ResponseEnum(Enum):
     INVALID_PARAMS = (9000, u'无效的参数')
 
     PROJECT_NAME_CANNOT_BE_EMPTY = (9005, u'仓库名称不能为空')
-    PROJECT_PATH_CANNOT_BE_EMPTY = (9006, u'仓库路径不能为空')
+    PROJECT_PATH_NOT_VALID = (9006, u'仓库路径不符合要求，必须由字母，数字，短横线和下划线组成')
     NAME_OR_PATH_ALREADY_EXISTS = (9007, u'name或path已经存在')
     VISIBILITY_NOT_VALID = (9008, u'visibility只允许填写private和public')
 
