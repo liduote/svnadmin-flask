@@ -64,7 +64,7 @@ svn_domain=${SVN_DOMAIN:-svnadmin.example.com}
 svn_port=${SVN_PORT:-80}
 svn_host=$svn_domain:$svn_port
 sed -i 's@{Host}@'${svn_host}'@' /etc/nginx/nginx.conf
-sed -i 's@/var/log/nginx/@'${log_path}'/nginx_@'/etc/nginx/nginx.conf
+sed -i 's@/var/log/nginx/@'${log_path}'/nginx_@' /etc/nginx/nginx.conf
 
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/supervisor.conf
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/gunicorn_conf.py
