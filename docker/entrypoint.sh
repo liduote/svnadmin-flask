@@ -13,6 +13,8 @@ sed -i 's@#ServerName www.example.com:80@ServerName www.example.com:88@' /etc/ht
 sed -i 's@User apache@User svn@' /etc/httpd/conf/httpd.conf
 sed -i 's@Group apache@Group svn@' /etc/httpd/conf/httpd.conf
 sed -i 's@Listen 80@Listen 88@' /etc/httpd/conf/httpd.conf
+sed -i 's@ErrorLog "logs/error_log"@ErrorLog "'${log_path}'/httpd_error.log"@' /etc/httpd/conf/httpd.conf
+sed -i 's@CustomLog "logs/access_log"@CustomLog "'${log_path}'/httpd_access.log"@' /etc/httpd/conf/httpd.conf
 /bin/cp -rf /svnadmin-flask/docker/mod_auth_mysql.so /etc/httpd/modules/mod_auth_mysql.so
 chmod 755 /etc/httpd/modules/mod_auth_mysql.so
 
@@ -62,6 +64,7 @@ svn_domain=${SVN_DOMAIN:-svnadmin.example.com}
 svn_port=${SVN_PORT:-80}
 svn_host=$svn_domain:$svn_port
 sed -i 's@{Host}@'${svn_host}'@' /etc/nginx/nginx.conf
+sed -i 's@/var/log/nginx/@'${log_path}'/nginx_@'/etc/nginx/nginx.conf
 
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/supervisor.conf
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/gunicorn_conf.py
