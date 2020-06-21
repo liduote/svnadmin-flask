@@ -66,6 +66,6 @@ sed -i 's@{Host}@'${svn_host}'@' /etc/nginx/nginx.conf
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/supervisor.conf
 sed -i 's@{LOG_DIR}@'${log_path}'@' /svnadmin-flask/gunicorn_conf.py
 
-python /svnadmin_flask/migrate.py
+python /svnadmin-flask/migrate.py
 # 启动所有服务
 supervisord -c /svnadmin-flask/supervisor.conf
