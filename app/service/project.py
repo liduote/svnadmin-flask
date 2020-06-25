@@ -8,7 +8,7 @@ from config import Config
 from app.enum import BusiEnum, ResponseEnum
 from app.model.project import Project
 from app.exception import InvalidUsage, SvnOperateException
-from app.extensions import create_repository, save_authz, db, delete_repository
+from app.extensions import create_repository, save_authz, db, delete_repository, init_repo_dirs
 
 
 class ProjectService:
@@ -49,19 +49,19 @@ class ProjectService:
         project.description = self.description
         project.visibility = self.visibility
         project.setting_auth_content = self.generate_setting_auth_content()
-        project.final_auth_content = self.generate_final_auth_content()
+        project.final_auth_content = self.generate_final_auth_content(project)
         project.last_activity_on = datetime.now()
         project.save()
-        # 创建仓库
         try:
+            # 创建仓库
             create_repository(project)
-        except SvnOperateException as e:
-            project.delete_self()
-            raise InvalidUsage(payload=(e.status, e.output))
-        # 修改authz文件
-        try:
+            # 初始化目录
+            if self.initDirs:
+                init_repo_dirs(project)
+            # 保存权限
             save_authz(project)
         except SvnOperateException as e:
+            delete_repository(project)
             project.delete_self()
             raise InvalidUsage(payload=(e.status, e.output))
         self.add_external_field(project)
@@ -122,6 +122,19 @@ class ProjectService:
 
         return results
 
+    def generate_setting_auth_content(self):
+        return '[/]\nlidt3 = rw'
+
+    def generate_final_auth_content(self, project):
+        setting_auth_content = project.setting_auth_content
+        if project.visibility == 'private':
+            return setting_auth_content
+
+        if '[/]' in setting_auth_content:
+            return setting_auth_content.replace('[/]', '[/]\n* = r')
+        else:
+            return '[/]\n* = r\n' + setting_auth_content
+
     def name_or_path_conflict(self):
         one = Project.query.filter(or_(
             Project.name == self.name,
@@ -129,12 +142,6 @@ class ProjectService:
         )).first()
 
         return True if one else False
-
-    def generate_setting_auth_content(self):
-        return '[/]\nlidt3 = rw'
-
-    def generate_final_auth_content(self):
-        return self.generate_setting_auth_content()
 
     def update_project_auth(self, project_id):
         if not project_id or not self.setting_auth_content:
@@ -180,6 +187,7 @@ class ProjectService:
             raise InvalidUsage(ResponseEnum.OBJECT_NOT_FOUNT)
 
         project.setting_auth_content = self.setting_auth_content
+        project.final_auth_content = self.generate_final_auth_content(project)
         try:
             save_authz(project)
             db.session.commit()

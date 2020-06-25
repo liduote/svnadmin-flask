@@ -28,3 +28,7 @@ class Config:
         SVN_BASE_URL = '{}://{}/svn'.format(HTTP_SCHEMA, SVN_DOMAIN)
     else:
         SVN_BASE_URL = '{}://{}:{}/svn'.format(HTTP_SCHEMA, SVN_DOMAIN, SVN_PORT)
+
+    SVN_INIT_DIRS = [
+        'trunk', 'branches', 'tags', 'document'
+    ]
