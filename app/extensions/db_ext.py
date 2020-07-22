@@ -53,6 +53,8 @@ class AlchemyEncoder(json.JSONEncoder):
                     continue
                 if field == 'query':
                     continue
+                if field == 'password':
+                    continue
                 data = obj.__getattribute__(field)
                 try:
                     if type(data) is datetime:

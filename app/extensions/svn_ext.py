@@ -35,7 +35,7 @@ def init_repo_dirs(project):
             format(data_dir=Config.DATA_DIR,
                    repo_path=project.path,
                    dir=d)
-    cmd = 'su - svn -c "{exec} mkdir {dirs}"'.format(exec=CLIENT_EXCUTOR, dirs=dirs)
+    cmd = 'su - svn -c "{exec} mkdir {dirs} -m initDirs."'.format(exec=CLIENT_EXCUTOR, dirs=dirs)
     status, output = subprocess.getstatusoutput(cmd)
     if status != 0:
         raise SvnOperateException(status, output)

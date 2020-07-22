@@ -11,6 +11,8 @@ def get_project_list():
     """
     获取仓库列表
     ---
+    tags:
+      - 项目
     parameters:
       - name: searchKey
         in: query
@@ -30,6 +32,8 @@ def create_project():
     """
     创建svn仓库
     ---
+    tags:
+      - 项目
     parameters:
       - name: name
         in: formData
@@ -105,6 +109,8 @@ def get_project_by_id(project_id):
     """
     根据id获取仓库
     ---
+    tags:
+      - 项目
     parameters:
       - name: project_id
         in: path
@@ -124,6 +130,8 @@ def update_project():
     """
     更新仓库
     ---
+    tags:
+      - 项目
     parameters:
       - name: id
         in: formData
@@ -151,6 +159,8 @@ def delete_project(project_id):
     """
     删除仓库
     ---
+    tags:
+      - 项目
     parameters:
       - name: project_id
         in: path
@@ -170,6 +180,8 @@ def update_project_auth(project_id):
     """
     更新仓库权限
     ---
+    tags:
+      - 项目
     parameters:
       - name: project_id
         in: path

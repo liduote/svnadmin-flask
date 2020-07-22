@@ -32,3 +32,8 @@ class Config:
     SVN_INIT_DIRS = [
         'trunk', 'branches', 'tags', 'document'
     ]
+
+    JWT_ACCESS_TOKEN_EXPIRES = 86400
+    JWT_TOKEN_LOCATION = ('headers', 'query_string')
+    JWT_QUERY_STRING_NAME = 'token'
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or '123456'
