@@ -1,5 +1,6 @@
 import json
 import hashlib
+import re
 from datetime import datetime
 
 from flask_jwt_extended import get_jwt_claims
@@ -42,6 +43,12 @@ class UserService:
 
         if self.current_user.get('admin') != 1:
             raise InvalidUsage(payload=ResponseEnum.PERMISSION_ERROR)
+
+        if not re.match(r'[a-z][a-z0-9]+', self.username):
+            raise InvalidUsage(payload=ResponseEnum.USERNAME_INVALID)
+
+        if not re.match(r'([a-zA-Z]|[0-9])(\w|-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})', self.email):
+            raise InvalidUsage(payload=ResponseEnum.EMAIL_INVALID)
 
         return self
 

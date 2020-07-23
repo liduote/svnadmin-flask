@@ -14,17 +14,12 @@ conn = pymysql.connect(host=Config.MYSQL_HOST,
 
 cur = conn.cursor()
 
-sql = 'show tables;'
 try:
-    cur.execute(sql)  # 执行sql语句
-
-    results = cur.fetchall()  # 获取查询的所有记录
-    if not results:
-        os.chdir('/svnadmin-flask')
-        os.environ.setdefault('FLASK_APP', 'manage.py')
-        status, output = subprocess.getstatusoutput('flask db upgrade')
-        print(status)
-        print(output)
+    os.chdir('/svnadmin-flask')
+    os.environ.setdefault('FLASK_APP', 'manage.py')
+    status, output = subprocess.getstatusoutput('flask db upgrade')
+    print(status)
+    print(output)
 except Exception as e:
     raise e
 finally:

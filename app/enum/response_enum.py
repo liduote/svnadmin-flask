@@ -27,6 +27,8 @@ class ResponseEnum(Enum):
     EMAIL_CONFLICT = (9013, u'该邮箱已被注册')
     USER_ID_CANNOT_BE_EMPTY = (9014, u'user_id不能为空')
     OLDPASSWORD_IS_NOT_MATCH = (9015, u'原密码不正确')
+    USERNAME_INVALID = (9016, u'用户名无效，必须是小写字母和数字并且以字母开头')
+    EMAIL_INVALID = (9017, u'邮箱地址无效')
 
     OBJECT_NOT_FOUNT = (9009, u'目标对象不存在')
 
