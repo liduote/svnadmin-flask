@@ -4,9 +4,11 @@ from flask import request
 from . import main
 from app.service import ProjectService
 from app.extensions import AlchemyEncoder
+from flask_jwt_extended import jwt_required
 
 
 @main.route('/projects', methods=['GET'])
+@jwt_required
 def get_project_list():
     """
     获取仓库列表
@@ -28,6 +30,7 @@ def get_project_list():
 
 
 @main.route('/projects', methods=['POST'])
+@jwt_required
 def create_project():
     """
     创建svn仓库
@@ -176,6 +179,7 @@ def delete_project(project_id):
 
 
 @main.route('/projects/<int:project_id>/auth', methods=['POST'])
+@jwt_required
 def update_project_auth(project_id):
     """
     更新仓库权限

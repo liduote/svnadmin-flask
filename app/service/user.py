@@ -10,6 +10,7 @@ from app.enum import ResponseEnum, BusiEnum
 from app.model import User
 from app.exception import InvalidUsage
 from app.extensions import AlchemyEncoder
+from .member import MemberService
 
 
 class UserService:
@@ -96,7 +97,10 @@ class UserService:
         if type(self.json_users) is list:
             for u in self.json_users:
                 User.query.get(u.get('id')).delete_self()
+                MemberService().delall_user_member(u.get('id'))
         elif type(self.json_users) is dict:
             User.query.get(self.json_users.get('id')).delete_self()
-
+            MemberService().delall_user_member(self.json_users.get('id'))
         return 'ok'
+
+

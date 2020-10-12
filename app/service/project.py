@@ -1,14 +1,17 @@
 import re
+import json
 from datetime import datetime
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from flask import abort
+from flask_jwt_extended import get_jwt_claims
 
 from config import Config
 from app.enum import BusiEnum, ResponseEnum
-from app.model.project import Project
+from app.model import Project, User, Member
 from app.exception import InvalidUsage, SvnOperateException
 from app.extensions import create_repository, save_authz, db, delete_repository, init_repo_dirs
+from .member import MemberService
 
 
 class ProjectService:
@@ -42,17 +45,20 @@ class ProjectService:
         return self
 
     def save(self):
+        current_user = json.loads(get_jwt_claims())
         # 创建数据库
         project = Project()
+        project.created_by = current_user.get('id')
         project.name = self.name
         project.path = self.path
         project.description = self.description
         project.visibility = self.visibility
-        project.setting_auth_content = self.generate_setting_auth_content()
+        project.setting_auth_content = self.generate_setting_auth_content(current_user)
         project.final_auth_content = self.generate_final_auth_content(project)
         project.last_activity_on = datetime.now()
         project.save()
         try:
+            MemberService().save_project_member(project.id, project.created_by, project.created_by, 50)
             # 创建仓库
             create_repository(project)
             # 初始化目录
@@ -102,28 +108,40 @@ class ProjectService:
         try:
             delete_repository(project)
             project.delete_self()
+            MemberService().delall_project_member(project_id)
         except SvnOperateException:
             raise InvalidUsage(payload=ResponseEnum.SERVER_ERROR)
 
         return 'success'
 
     def search(self):
+        current_user = json.loads(get_jwt_claims())
+        members = Member.query.filter(and_(
+            Member.source_type == 'Project',
+            Member.user_id == current_user.get('id')
+        )).all()
+
+        project_ids = [m.source_id for m in members]
+
         if self.searchValue:
             results = Project.query.filter(or_(
                 Project.name.like('%' + self.searchValue + '%'),
                 Project.path.like('%' + self.searchValue + '%'),
-                Project.description.like('%' + self.searchValue + '%')
+                Project.description.like('%' + self.searchValue + '%'),
+                Project.id.in_(project_ids)
             )).order_by(Project.last_activity_on.desc()).all()
         else:
-            results = Project.query.all()
+            results = Project.query.filter(
+                Project.id.in_(project_ids)
+            ).all()
 
         for p in results:
             self.add_external_field(p)
 
         return results
 
-    def generate_setting_auth_content(self):
-        return '[/]\nlidt3 = rw'
+    def generate_setting_auth_content(self, current_user):
+        return '[/]\n{} = rw'.format(current_user.get('username'))
 
     def generate_final_auth_content(self, project):
         setting_auth_content = project.setting_auth_content
@@ -144,6 +162,8 @@ class ProjectService:
         return True if one else False
 
     def update_project_auth(self, project_id):
+        current_user = json.loads(get_jwt_claims())
+
         if not project_id or not self.setting_auth_content:
             raise InvalidUsage(payload=ResponseEnum.INVALID_PARAMS)
         auth_list = self.setting_auth_content.replace(' ', '').split('\n')
@@ -182,6 +202,13 @@ class ProjectService:
                 err_msg = '错误，组{}未定义'.format(g)
                 raise InvalidUsage(payload=(9000, err_msg))
 
+        # check username if exists
+        for d in developers:
+            user = User.query.filter(User.username == d).first()
+            if not user:
+                err_msg = '错误，用户{}不存在'.format(d)
+                raise InvalidUsage(payload=(9000, err_msg))
+
         project = Project.query.get(project_id)
         if not project:
             raise InvalidUsage(ResponseEnum.OBJECT_NOT_FOUNT)
@@ -191,6 +218,7 @@ class ProjectService:
         try:
             save_authz(project)
             db.session.commit()
+            self.sync_project_member(project, developers, current_user)
         except Exception:
             db.session.rollback()
             raise InvalidUsage(payload=ResponseEnum.SERVER_ERROR)
@@ -225,3 +253,27 @@ class ProjectService:
                 project.http_url = Config.SVN_BASE_URL + project.path
             else:
                 project.http_url = Config.SVN_BASE_URL + '/' + project.path
+
+    def sync_project_member(self, project, developers, current_user):
+        exists_members = Member.query.filter(and_(
+            Member.source_type == 'Project',
+            Member.source_id == project.id
+        )).all()
+
+        member_ids = []
+        for m in exists_members:
+            member_ids.append(m.user_id)
+
+        developer_ids = []
+        for d in developers:
+            user = User.query.filter(User.username == d).first()
+            developer_ids.append(user.id)
+
+        for m in member_ids:
+            if m not in developer_ids:
+                MemberService().del_project_member(project.id, m)
+
+        for d in developer_ids:
+            if d not in member_ids:
+                MemberService().save_project_member(project.id, d, current_user.get('id'), 30)
+
